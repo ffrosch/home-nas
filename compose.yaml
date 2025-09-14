@@ -9,6 +9,7 @@ services:
       - |
         OPTIONS=
           --private-repos
+          --log -
       #     --tls
       #     --tls-cert=/certs/local.crt
       #     --tls-key=/certs/local.key
