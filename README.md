@@ -21,13 +21,19 @@ docker compose exec -it rest-server delete_user <user>
 Create repo
 
 ```shell
-restic -r rest:http://<user>:<password>@<host>:<port>/<user> init
+restic -r rest:http://<user>:<password>@<host>:<port>/<user> init --insecure-tls
 ```
 
 Delete repo
 
 ```shell
 docker compose exec -it rest-server rm -rf /data/<user>
+```
+
+List snapshots
+
+```shell
+restic -r rest:http://<user>:<password>@<host>:<port>/<user> snapshots --insecure-tls
 ```
 
 Create user credentials for traefik dashboard
@@ -37,6 +43,8 @@ echo $(htpasswd -nB user) | sed -e s/\\$/\\$\\$/g
 ```
 
 ## SSL self-signed certificates
+
+**WARNING:** self-signed certs require the flag `--insecure-tls` when using restic.
 
 ```shell
 HOSTNAME=$(hostname)
