@@ -87,7 +87,7 @@ services:
       - "traefik.http.middlewares.rest-server-regex.replacepathregex.replacement=/$$1"
 
       # Middleware for Dashboard authentication
-      - "traefik.http.middlewares.dashboard-auth.basicauth.users=flo:$$2y$$05$$O080Crm1BcQDJrhICY0UYef.WeKKhK0HM8wqs1Qwp2DZmnRyong/u"
+      - "traefik.http.middlewares.dashboard-auth.basicauth.users=${AUTH_USERS}"
 
       # Secure Headers Middleware
       - "traefik.http.middlewares.secure-headers.headers.frameDeny=true"
@@ -99,7 +99,7 @@ services:
       - "traefik.http.middlewares.secure-headers.headers.stsSeconds=31536000"
 
       # IP Allowlist Middleware
-      - "traefik.http.middlewares.ip-allowlist.ipallowlist.sourceRange=127.0.0.1/32,192.168.0.0/16,10.0.0.0/8"
+      - "traefik.http.middlewares.ip-allowlist.ipallowlist.sourceRange=${IP_ALLOWLIST}"
 
   # whoami:
   #   image: "traefik/whoami"
