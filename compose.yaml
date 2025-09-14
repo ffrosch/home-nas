@@ -1,0 +1,14 @@
+services:
+  rest-server:
+    container_name: rest-server
+    image: restic/rest-server:latest
+    environment:
+      # - DISABLE_AUTHENTICATION=true
+      - PASSWORD_FILE=/.htpasswd
+      - OPTIONS=--private-repos
+    ports:
+      - "8000:8000"
+    volumes:
+      - /media/flo/BACKUPS/restic/repo:/data
+      - /media/flo/BACKUPS/restic/.htpasswd:/.htpasswd
+
