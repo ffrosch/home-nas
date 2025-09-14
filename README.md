@@ -1,5 +1,9 @@
 # NAS with restic rest-server
 
+Currently, the solution is to rely on [zero-conf networking](https://en.wikipedia.org/wiki/Zero-configuration_networking).
+This way the NAS server can be accessed by using its **hostname** as url.
+**WARNING:** Subdomains are not supported with this approach.
+
 ## Management
 
 Create user
@@ -25,3 +29,45 @@ Delete repo
 ```shell
 docker compose exec -it rest-server rm -rf /data/<user>
 ```
+
+Create user credentials for traefik dashboard
+
+```shell
+echo $(htpasswd -nB user) | sed -e s/\\$/\\$\\$/g
+```
+
+## SSL self-signed certificates
+
+```shell
+HOSTNAME=$(hostname)
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout certs/local.key \
+    -out certs/local.crt \
+    -subj "/CN=${HOSTNAME}" \
+    -addext "subjectAltName = DNS:${HOSTNAME}"
+```
+
+## Dynamic DNS
+
+This is useful to make a local server accessible from the internet.
+E.g. to get a valid Let's Encrypt SSL certificate (which won't work for local access...).
+
+Using [dynv6](https://dynv6.com/) and [Telekom Speedport Smart 4 - Dynamic DNS](http://speedport.ip/html/content/internet/dyn_dns.html)
+
+Instructions overview:
+
+1. Create a [zone](https://dynv6.com/zones)
+1. Use the zone to activate the [Dynamic DNS](http://speedport.ip/html/content/internet/dyn_dns.html) -> see settings section below
+1. Secure the server as much as possible with auto-updates, ufw, etc.
+1. Secure traefik as much as possible, e.g. with `exposedbydefault=false` and whitelisting
+1. Activate [Portforwarding](http://speedport.ip/html/content/internet/portforwarding.html) to the ports traefik is using on the target server (80, 443)
+
+### Settings for dynamic DNS
+
+Provider: Other provider  
+Host name: \<your-dynv6-domain\>  
+User name: none  
+Password: \<[your-http-token](https://dynv6.com/keys#token)\>  
+Updateserver address: dynv6.com  
+Protocol: HTTPS  
+Port: 443  

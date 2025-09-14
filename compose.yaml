@@ -1,14 +1,115 @@
 services:
   rest-server:
+    image: restic/rest-server:0.14.0
     container_name: rest-server
-    image: restic/rest-server:latest
+    restart: unless-stopped
     environment:
       # - DISABLE_AUTHENTICATION=true
       - PASSWORD_FILE=/.htpasswd
-      - OPTIONS=--private-repos
-    ports:
-      - "8000:8000"
+      - |
+        OPTIONS=
+          --private-repos
+      #     --tls
+      #     --tls-cert=/certs/local.crt
+      #     --tls-key=/certs/local.key
+      #     --debug
+    # ports:
+    #   - "8000:8000"
     volumes:
-      - /media/flo/BACKUPS/restic/repo:/data
-      - /media/flo/BACKUPS/restic/.htpasswd:/.htpasswd
+      - ${RESTIC_DATA_DIR}/data:/data
+      - ${RESTIC_DATA_DIR}/.htpasswd:/.htpasswd
+      # - ./certs:/certs:ro
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.rest-server.rule=Host(`${HOSTNAME}`) && PathPrefix(`/rest-server`)"
+      - "traefik.http.routers.rest-server.middlewares=rest-server-regex,secure-headers,ip-allowlist"
 
+  traefik:
+    image: traefik:v3.5.2
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    command:
+      # API & Dashboard
+      - "--api.insecure=false"
+      - "--api.dashboard=true"
+      
+      # Observability
+      - "--log.level=INFO"
+      - "--accesslog=true"
+      # - "--metrics.prometheus=true"
+
+      # Providers
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=proxy"
+
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.http.tls=true"
+      # ensure HTTPS is used by default by every service
+      - "--entrypoints.websecure.asDefault=true"
+      
+      # Attach dynamic configuration settings (e.g. TLS configuration)
+      - "--providers.file.directory=/dynamic"
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      # Self-signed SSL certificates
+      - "./certs:/certs:ro"
+      - "./dynamic:/dynamic:ro"
+
+    labels:
+      # Enable self-routing
+      - "traefik.enable=true"
+
+      # Dashboard router
+      - "traefik.http.routers.dashboard.rule=Host(`${HOSTNAME}`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.middlewares=dashboard-auth,secure-headers,ip-allowlist"
+
+      # Middleware to replace /rest-server/user with /user
+      - "traefik.http.middlewares.rest-server-regex.replacepathregex.regex=^/rest-server/(.*)"
+      - "traefik.http.middlewares.rest-server-regex.replacepathregex.replacement=/$$1"
+
+      # Middleware for Dashboard authentication
+      - "traefik.http.middlewares.dashboard-auth.basicauth.users=flo:$$2y$$05$$O080Crm1BcQDJrhICY0UYef.WeKKhK0HM8wqs1Qwp2DZmnRyong/u"
+
+      # Secure Headers Middleware
+      - "traefik.http.middlewares.secure-headers.headers.frameDeny=true"
+      - "traefik.http.middlewares.secure-headers.headers.sslRedirect=true"
+      - "traefik.http.middlewares.secure-headers.headers.browserXssFilter=true"
+      - "traefik.http.middlewares.secure-headers.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.secure-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.secure-headers.headers.stsPreload=true"
+      - "traefik.http.middlewares.secure-headers.headers.stsSeconds=31536000"
+
+      # IP Allowlist Middleware
+      - "traefik.http.middlewares.ip-allowlist.ipallowlist.sourceRange=127.0.0.1/32,192.168.0.0/16,10.0.0.0/8"
+
+  # whoami:
+  #   image: "traefik/whoami"
+  #   container_name: whoami
+  #   restart: unless-stopped
+  #   networks:
+  #     - proxy
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.whoami.rule=Host(`${HOSTNAME}`) && PathPrefix(`/whoami`)"
+
+networks:
+  proxy:
+    name: proxy
