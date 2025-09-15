@@ -27,7 +27,7 @@ docker compose exec -it rest-server delete_user <user>
 Create repo
 
 ```shell
-restic -r rest:http://<user>:<password>@<host>:<port>/<user> init --insecure-tls
+restic -r rest:https://<user>:<password>@<host>/rest-server/<user> init --insecure-tls
 ```
 
 Delete repo
@@ -39,7 +39,7 @@ docker compose exec -it rest-server rm -rf /data/<user>
 List snapshots
 
 ```shell
-restic -r rest:http://<user>:<password>@<host>:<port>/<user> snapshots --insecure-tls
+restic -r rest:https://<user>:<password>@<host>/rest-server/<user> snapshots --insecure-tls
 ```
 
 Create user credentials for traefik dashboard
