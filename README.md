@@ -4,6 +4,12 @@ Currently, the solution is to rely on [zero-conf networking](https://en.wikipedi
 This way the NAS server can be accessed by using its **hostname** as url.
 **WARNING:** Subdomains are not supported with this approach.
 
+## Initialize
+
+```shell
+mkdir certs logs
+```
+
 ## Management
 
 Create user

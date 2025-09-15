@@ -9,7 +9,7 @@ services:
       - |
         OPTIONS=
           --private-repos
-          --log -
+          --log /logs/rest-server.log
       #     --tls
       #     --tls-cert=/certs/local.crt
       #     --tls-key=/certs/local.key
@@ -17,15 +17,16 @@ services:
     # ports:
     #   - "8000:8000"
     volumes:
-      - ${RESTIC_DATA_DIR}/data:/data
-      - ${RESTIC_DATA_DIR}/.htpasswd:/.htpasswd
+      - ${RESTIC_DIR}/data:/data
+      - ${RESTIC_DIR}/.htpasswd:/.htpasswd
+      - ./logs:/logs
       # - ./certs:/certs:ro
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.rest-server.rule=Host(`${HOSTNAME}`) && PathPrefix(`/rest-server`)"
-      - "traefik.http.routers.rest-server.middlewares=rest-server-regex,secure-headers,ip-allowlist"
+      - "traefik.http.routers.rest-server.middlewares=rest-server-regex,secure-headers"
 
   traefik:
     image: traefik:v3.5.2
@@ -43,6 +44,7 @@ services:
       # Observability
       - "--log.level=INFO"
       - "--accesslog=true"
+      - "--accesslog.filePath=/logs/traefik-access.log"
       # - "--metrics.prometheus=true"
 
       # Providers
@@ -72,6 +74,7 @@ services:
       # Self-signed SSL certificates
       - "./certs:/certs:ro"
       - "./dynamic:/dynamic:ro"
+      - "./logs:/logs"
 
     labels:
       # Enable self-routing
@@ -80,7 +83,7 @@ services:
       # Dashboard router
       - "traefik.http.routers.dashboard.rule=Host(`${HOSTNAME}`)"
       - "traefik.http.routers.dashboard.service=api@internal"
-      - "traefik.http.routers.dashboard.middlewares=dashboard-auth,secure-headers,ip-allowlist"
+      - "traefik.http.routers.dashboard.middlewares=dashboard-auth,secure-headers"
 
       # Middleware to replace /rest-server/user with /user
       - "traefik.http.middlewares.rest-server-regex.replacepathregex.regex=^/rest-server/(.*)"
@@ -99,18 +102,26 @@ services:
       - "traefik.http.middlewares.secure-headers.headers.stsSeconds=31536000"
 
       # IP Allowlist Middleware
-      - "traefik.http.middlewares.ip-allowlist.ipallowlist.sourceRange=${IP_ALLOWLIST}"
+      # doesn't work for Marias Laptop - the x-forwarded-for IP gets replaced by a docker container IP (172.4.0.x)
+      # - "traefik.http.middlewares.ip-allowlist.ipallowlist.sourceRange=${IP_ALLOWLIST}"
 
-  # whoami:
-  #   image: "traefik/whoami"
-  #   container_name: whoami
-  #   restart: unless-stopped
-  #   networks:
-  #     - proxy
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.whoami.rule=Host(`${HOSTNAME}`) && PathPrefix(`/whoami`)"
+  whoami:
+    image: "traefik/whoami"
+    container_name: whoami
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`${HOSTNAME}`) && PathPrefix(`/whoami`)"
+      - "traefik.http.routers.whoami.middlewares=secure-headers"
 
 networks:
   proxy:
     name: proxy
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 2001:db8::/64
