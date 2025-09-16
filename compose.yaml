@@ -101,10 +101,6 @@ services:
       - "traefik.http.middlewares.secure-headers.headers.stsPreload=true"
       - "traefik.http.middlewares.secure-headers.headers.stsSeconds=31536000"
 
-      # IP Allowlist Middleware
-      # doesn't work for Marias Laptop - the x-forwarded-for IP gets replaced by a docker container IP (172.4.0.x)
-      # - "traefik.http.middlewares.ip-allowlist.ipallowlist.sourceRange=${IP_ALLOWLIST}"
-
   whoami:
     image: "traefik/whoami"
     container_name: whoami
@@ -119,9 +115,3 @@ services:
 networks:
   proxy:
     name: proxy
-    driver: bridge
-    enable_ipv6: true
-    ipam:
-      driver: default
-      config:
-        - subnet: 2001:db8::/64
