@@ -157,6 +157,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_HOST=redis
     volumes:
       - nextcloud:/var/www/html
       - /mnt/restic/flo/snapshots/latest/home/flo/Pictures:/mnt/flo/Pictures:ro
