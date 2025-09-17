@@ -159,7 +159,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - nextcloud:/var/www/html
-      # - /mnt/restic/flo/snapshots/latest/home/flo/Pictures:/mnt/flo/Pictures:ro
+      - /mnt/restic/flo/snapshots/latest/home/flo/Pictures:/mnt/flo/Pictures:ro
     depends_on:
       - postgres
       - redis
