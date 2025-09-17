@@ -3,6 +3,7 @@ services:
     image: restic/rest-server:0.14.0
     restart: always
     environment:
+      - TZ=Europe/Berlin
       # - DISABLE_AUTHENTICATION=true
       - PASSWORD_FILE=/.htpasswd
       - |
@@ -114,6 +115,8 @@ services:
     restart: always
     networks:
       - proxy
+    environment:
+      - TZ=Europe/Berlin
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.whoami.rule=Host(`${HOSTNAME}`) && PathPrefix(`/whoami`)"
@@ -127,6 +130,7 @@ services:
     networks:
       - nextcloud
     environment:
+      - TZ=Europe/Berlin
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -136,6 +140,8 @@ services:
     restart: always
     networks:
       - nextcloud
+    environment:
+      - TZ=Europe/Berlin
 
   nextcloud:
     image: nextcloud:31.0.9
