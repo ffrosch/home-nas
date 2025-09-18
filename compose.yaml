@@ -82,7 +82,7 @@ services:
       - "traefik.enable=true"
 
       # Redirect short hostname to full hostname
-      - "traefik.http.routers.short-hostname-redirect.rule=HostRegexp(`^tuxedo-infinitybook-s15-gen6$`)"
+      - "traefik.http.routers.short-hostname-redirect.rule=Host(`${HOSTNAME_SHORT}`)"
       - "traefik.http.routers.short-hostname-redirect.middlewares=short-hostname-redirect-regex"
       - "traefik.http.middlewares.short-hostname-redirect-regex.redirectregex.permanent=true"
       - "traefik.http.middlewares.short-hostname-redirect-regex.redirectregex.regex=^https://.*/(.*)"
