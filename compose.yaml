@@ -81,6 +81,13 @@ services:
       # Enable self-routing
       - "traefik.enable=true"
 
+      # Redirect short hostname to full hostname
+      - "traefik.http.routers.short-hostname-redirect.rule=HostRegexp(`^tuxedo-infinitybook-s15-gen6$`)"
+      - "traefik.http.routers.short-hostname-redirect.middlewares=short-hostname-redirect-regex"
+      - "traefik.http.middlewares.short-hostname-redirect-regex.redirectregex.permanent=true"
+      - "traefik.http.middlewares.short-hostname-redirect-regex.redirectregex.regex=^https://.*/(.*)"
+      - "traefik.http.middlewares.short-hostname-redirect-regex.redirectregex.replacement=https://${HOSTNAME}/$${1}"
+
       # Dashboard router
       - "traefik.http.routers.dashboard.rule=Host(`${HOSTNAME}`)"
       - "traefik.http.routers.dashboard.service=api@internal"
