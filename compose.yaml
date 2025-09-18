@@ -85,7 +85,7 @@ services:
       - "traefik.http.routers.short-hostname-redirect.rule=Host(`${HOSTNAME_SHORT}`)"
       - "traefik.http.routers.short-hostname-redirect.middlewares=short-hostname-redirect-regex"
       - "traefik.http.middlewares.short-hostname-redirect-regex.redirectregex.permanent=true"
-      - "traefik.http.middlewares.short-hostname-redirect-regex.redirectregex.regex=^https://.*/(.*)"
+      - "traefik.http.middlewares.short-hostname-redirect-regex.redirectregex.regex=^https://[^/]+/(.*)"
       - "traefik.http.middlewares.short-hostname-redirect-regex.redirectregex.replacement=https://${HOSTNAME}/$${1}"
 
       # Dashboard router
