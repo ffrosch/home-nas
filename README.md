@@ -61,6 +61,15 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -addext "subjectAltName = DNS:${HOSTNAME}"
 ```
 
+## Photoprism
+
+```shell
+mkdir -p photoprism/database/flo
+mkdir -p photoprism/database/maria
+mkdir -p photoprism/storage/flo
+mkdir -p photoprism/storage/maria
+```
+
 ## Dynamic DNS
 
 This is useful to make a local server accessible from the internet.
@@ -84,4 +93,4 @@ User name: none
 Password: \<[your-http-token](https://dynv6.com/keys#token)\>  
 Updateserver address: dynv6.com  
 Protocol: HTTPS  
-Port: 443  
+Port: 443
