@@ -1,6 +1,8 @@
-.env
 /certs
+/logs
+/photoprism
+/restic
+.env
 *.crt
 *.key
-/logs
 .htpasswd
