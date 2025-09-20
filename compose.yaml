@@ -25,7 +25,7 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.rest-server.rule=Host(`${HOSTNAME}`) && PathPrefix(`/rest-server`)"
+      - "traefik.http.routers.rest-server.rule=(Host(`${HOSTNAME}`) || Host(`${HOSTNAME_SHORT}`)) && PathPrefix(`/rest-server`)"
       - "traefik.http.routers.rest-server.middlewares=rest-server-regex,secure-headers"
 
   traefik:
